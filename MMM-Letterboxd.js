@@ -10,13 +10,26 @@ Module.register("MMM-Letterboxd", {
 
 
 	defaults: {
-		maxItems: 5,
+		maxItems: 4,
 		usernames: ["jmur14", "mburke44", "louphilly", "hkremer"],
 	},
 
 	start: function () {
 		this.loaded = false;
 		this.activityData = [];
+		this.scoreToStar = {
+			"-1.0": "None",
+			0.5: "½",
+			"1.0": "★",
+			1.5: "★½",
+			"2.0": "★★",
+			2.5: "★★½",
+			"3.0": "★★★",
+			3.5: "★★★½",
+			"4.0": "★★★★",
+			4.5: "★★★★½",
+			"5.0": "★★★★★",
+		};
 		this.sendSocketNotification("GET_ACTIVITY", {usernames: this.config.usernames});
 	},
 
@@ -75,12 +88,12 @@ Module.register("MMM-Letterboxd", {
 
 		// Add Image
 		let img = document.createElement('img');
-		img.src = activity.image;
+		img.src = activity.image
 		cell.appendChild(img);
 
 		// Create Rating div
 		let rating = document.createElement('div');
-		rating.innerHTML = activity.rating;
+		rating.innerHTML = this.scoreToStar[activity.rating]; // convert to starts
 		rating.style.cssText = 'text-align: left; width:50%; float: left;';
 
 		// Create User div
@@ -94,5 +107,5 @@ Module.register("MMM-Letterboxd", {
 		info.appendChild(user);
 		cell.appendChild(info);
 		return cell;
-	}
+	},
 })

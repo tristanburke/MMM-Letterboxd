@@ -99,6 +99,5 @@ module.exports = NodeHelper.create({
 		}
 		const originalImageCropRegex = /-0-.*-crop/;
 		return image.replace(originalImageCropRegex, "-0-150-0-225-crop");
-		// return image.replace(originalImageCropRegex, "-0-70-0-105-crop");
 	}
 });
