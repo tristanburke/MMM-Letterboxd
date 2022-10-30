@@ -1,0 +1,12 @@
+.MMM-Letterboxd td {
+	padding-left: 6px;
+	padding-right: 6px;
+}
+
+.MMM-Letterboxd .header-row {
+	font-weight: bold;
+}
+
+.MMM-Letterboxd .stats-row {
+	color: #fff;
+}
