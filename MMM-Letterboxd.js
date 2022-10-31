@@ -11,14 +11,15 @@ Module.register("MMM-Letterboxd", {
 
 	defaults: {
 		maxItems: 4,
-		usernames: ["jmur14", "mburke44", "louphilly", "hkremer"],
+		usernames: [],
+		fetchInternval: 300000, // minimum of 5 minutes
+		scale: "small"
 	},
 
 	start: function () {
 		this.loaded = false;
 		this.activityData = [];
 		this.scoreToStar = {
-			"-1.0": "None",
 			0.5: "½",
 			"1.0": "★",
 			1.5: "★½",
@@ -42,7 +43,7 @@ Module.register("MMM-Letterboxd", {
 			case "DOM_OBJECTS_CREATED":
 			  var timer = setInterval(()=>{
 			  	this.sendSocketNotification("GET_ACTIVITY", {usernames: this.config.usernames});
-			  }, 5000) // 600000 = 10 Minutes
+			  }, Math.max(this.config.fetchInternval, 300000)) // minimum of 5 minutes
 			  break
 		}
 	},
@@ -88,7 +89,6 @@ Module.register("MMM-Letterboxd", {
 
 		// Add Image
 		let img = document.createElement('img');
-		img.src = activity.image
 		cell.appendChild(img);
 
 		// Create Rating div
@@ -106,6 +106,14 @@ Module.register("MMM-Letterboxd", {
 		info.appendChild(rating);
 		info.appendChild(user);
 		cell.appendChild(info);
+
+		// Change image/styling for small/large scale mode
+		if (this.config.scale === "medium") {
+			img.src = activity.image.medium;
+		} else { // Else it must be small
+			img.src = activity.image.small;
+			info.style.cssText = "font-size: 9px;"
+		}
 		return cell;
 	},
 })

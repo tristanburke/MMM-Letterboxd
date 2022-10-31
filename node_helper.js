@@ -14,15 +14,14 @@ module.exports = NodeHelper.create({
 	
 	start: function() {
 		console.log('Starting node_helper for: ' + this.name);
-		this.activityData = [];
 	},
 
 
-	socketNotificationReceived: function(notification, payload) {
+	socketNotificationReceived: async function(notification, payload) {
 		switch(notification) {
 			case "GET_ACTIVITY":
-				this.getActivity(payload.usernames);
-				this.sendSocketNotification("ACTIVITY_RETRIEVED", { activityData: this.activityData });
+				let activityData = await this.getActivity(payload.usernames);
+				this.sendSocketNotification("ACTIVITY_RETRIEVED", { activityData: activityData});
 		}
 	},
 
@@ -31,7 +30,7 @@ module.exports = NodeHelper.create({
 
 		// Retrieve diary data for each username and await all data
 		let promises = [];
-		for (const username of usernames) {
+		for (let username of usernames) {
 			promises.push(this.getDiaryData(username));
 		}
 		let allActivity = await Promise.all(promises);
@@ -45,12 +44,12 @@ module.exports = NodeHelper.create({
 				return -1;
 			}
 		});
-		this.activityData = allActivity;
+		return allActivity;
 	},
 
 
 	getDiaryData: function(username) {
-		const uri = `https://letterboxd.com/${username}/rss/`;
+		let uri = `https://letterboxd.com/${username}/rss/`;
 
 		return fetch(uri)
 		.then((response) => {
@@ -65,9 +64,9 @@ module.exports = NodeHelper.create({
 		  return response.text();
 		})
 		.then((xml) => {
-		  const $ = cheerio.load(xml, { xmlMode: true });
+		  let $ = cheerio.load(xml, { xmlMode: true });
 
-		  const items = [];
+		  let items = [];
 
 		  $("item").each((i, element) => {
 		    items[i] = this.processItem($(element), username);
@@ -89,15 +88,16 @@ module.exports = NodeHelper.create({
 
 	getImage: function(item) {
 		// find the film poster and grab it's src
-		const description = item.find("description").text();
-		const $ = cheerio.load(description);
-		const image = $("p img").attr("src");
-
-		// if the film has no image return no object
+		let description = item.find("description").text();
+		let $ = cheerio.load(description);
+		let image = $("p img").attr("src");
 		if (!image) {
 			return {};
 		}
-		const originalImageCropRegex = /-0-.*-crop/;
-		return image.replace(originalImageCropRegex, "-0-150-0-225-crop");
+		let originalImageCropRegex = /-0-.*-crop/;
+		return {
+			medium: image.replace(originalImageCropRegex, "-0-150-0-225-crop"),
+			small: image.replace(originalImageCropRegex, "-0-70-0-105-crop")
+		};
 	}
 });
